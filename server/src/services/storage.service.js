@@ -5,10 +5,14 @@ const env = require('../config/env');
 const logger = require('../utils/logger');
 const ApiError = require('../utils/apiError');
 
-// Ensure local uploads directory exists
+// Ensure local uploads directory exists (safely ignored in read-only serverless environments like Vercel)
 const localUploadsDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(localUploadsDir)) {
-  fs.mkdirSync(localUploadsDir, { recursive: true });
+try {
+  if (!fs.existsSync(localUploadsDir)) {
+    fs.mkdirSync(localUploadsDir, { recursive: true });
+  }
+} catch (err) {
+  logger.warn(`Could not create local upload directory (serverless environment): ${err.message}`);
 }
 
 /**
