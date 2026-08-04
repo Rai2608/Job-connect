@@ -12,6 +12,9 @@ const swaggerSpec = require('./config/swagger');
 
 const app = express();
 
+// Trust reverse proxy (Vercel)
+app.set('trust proxy', 1);
+
 // Security Headers
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
