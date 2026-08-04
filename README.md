@@ -180,7 +180,3 @@ npm start
 MIT — see `LICENSE` file.
 
 ---
-
-For product scope, see [`PRD.md`](./PRD.md).
-For detailed requirements, see [`requirements.md`](./requirements.md).
-For the full tech stack rationale, see [`TECH_STACK.md`](./TECH_STACK.md).
