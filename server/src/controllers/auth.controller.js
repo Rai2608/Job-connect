@@ -18,8 +18,8 @@ const register = async (req, res, next) => {
       throw new ApiError(409, 'A user with this email address already exists');
     }
 
-    const isDevelopmentWithoutEmail = env.NODE_ENV === 'development' && (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS);
-    const verificationToken = isDevelopmentWithoutEmail ? undefined : crypto.randomBytes(32).toString('hex');
+    const isWithoutEmail = (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS);
+    const verificationToken = isWithoutEmail ? undefined : crypto.randomBytes(32).toString('hex');
 
     const user = new User({
       fullName,
@@ -27,12 +27,12 @@ const register = async (req, res, next) => {
       password,
       role,
       verificationToken,
-      isVerified: isDevelopmentWithoutEmail ? true : false,
+      isVerified: isWithoutEmail ? true : false,
     });
 
     await user.save();
 
-    if (isDevelopmentWithoutEmail) {
+    if (isWithoutEmail) {
       // Automatically initialize profiles upon verification (which is now registration)
       if (user.role === 'candidate') {
         const existingProfile = await CandidateProfile.findOne({ userId: user._id });
@@ -62,8 +62,8 @@ const register = async (req, res, next) => {
       isVerified: user.isVerified,
     };
 
-    const successMessage = isDevelopmentWithoutEmail
-      ? 'Registration successful! Account auto-verified for development.'
+    const successMessage = isWithoutEmail
+      ? 'Registration successful! Account auto-verified.'
       : 'Registration successful. Please check your email to verify your account.';
 
     return ApiResponse.success(res, userData, successMessage, 201);
