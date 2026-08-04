@@ -56,18 +56,14 @@ const uploadFile = async (file, folder = 'jobconnect') => {
     }
   }
 
-  // Fallback: Local Disk Storage
+  // Fallback for serverless/local environments without Cloudinary: Base64 Data URI
   try {
-    const cleanFileName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '')}`;
-    const destinationPath = path.join(localUploadsDir, cleanFileName);
-    
-    fs.writeFileSync(destinationPath, file.buffer);
-    
-    const localUrl = `http://localhost:${env.PORT}/uploads/${cleanFileName}`;
-    logger.info(`File saved locally: ${localUrl}`);
-    return localUrl;
+    const base64Data = file.buffer.toString('base64');
+    const dataUri = `data:${file.mimetype};base64,${base64Data}`;
+    logger.info(`File converted to Data URI (${file.originalname})`);
+    return dataUri;
   } catch (error) {
-    logger.error(`Local file write failed: ${error.message}`);
+    logger.error(`Data URI conversion failed: ${error.message}`);
     throw new ApiError(500, `File upload failed: ${error.message}`);
   }
 };
