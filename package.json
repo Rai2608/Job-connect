@@ -1,0 +1,10 @@
+{
+  "name": "jobconnect-root",
+  "version": "1.0.0",
+  "description": "JobConnect MEAN Stack Portal root",
+  "private": true,
+  "scripts": {
+    "start:server": "npm run dev --prefix server",
+    "start:client": "npm run start --prefix client"
+  }
+}

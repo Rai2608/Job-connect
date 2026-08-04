@@ -1,0 +1,96 @@
+<div class="min-h-screen flex flex-col bg-[#f8fafc] text-slate-800 font-sans">
+  <!-- Global Navbar -->
+  <nav class="sticky top-0 z-50 backdrop-blur-md bg-white/90 border-b border-slate-200/80 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Logo -->
+      <a routerLink="/" class="flex items-center gap-2 hover:opacity-90 transition-opacity">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center font-bold text-white shadow-lg shadow-brand-500/20">JC</div>
+        <span class="font-display font-bold text-lg tracking-tight text-slate-900">JobConnect</span>
+      </a>
+
+      <!-- Menu links based on Role -->
+      <div class="hidden md:flex items-center gap-6">
+        <a routerLink="/jobs" routerLinkActive="text-brand-600 font-semibold" [routerLinkActiveOptions]="{exact: true}" class="text-slate-600 hover:text-slate-900 transition-colors text-sm font-medium">Explore Jobs</a>
+        
+        <!-- Candidate links -->
+        <ng-container *ngIf="authService.isCandidate()">
+          <a routerLink="/candidate/dashboard" routerLinkActive="text-brand-600 font-semibold" class="text-slate-600 hover:text-slate-900 transition-colors text-sm font-medium">My Applications</a>
+          <a routerLink="/candidate/saved" routerLinkActive="text-brand-600 font-semibold" class="text-slate-600 hover:text-slate-900 transition-colors text-sm font-medium">Saved Jobs</a>
+        </ng-container>
+
+        <!-- Company links -->
+        <ng-container *ngIf="authService.isCompany()">
+          <a routerLink="/company/dashboard" routerLinkActive="text-brand-600 font-semibold" class="text-slate-600 hover:text-slate-900 transition-colors text-sm font-medium">Recruiter Dashboard</a>
+        </ng-container>
+
+        <!-- Admin links -->
+        <ng-container *ngIf="authService.isAdmin()">
+          <a routerLink="/admin/dashboard" routerLinkActive="text-brand-600 font-semibold" class="text-slate-600 hover:text-slate-900 transition-colors text-sm font-medium">Admin Panel</a>
+        </ng-container>
+      </div>
+
+      <!-- User controls -->
+      <div class="flex items-center gap-4">
+        <ng-container *ngIf="authService.isAuthenticated(); else guestButtons">
+          <!-- Notification Bell -->
+          <div class="relative cursor-pointer">
+            <button (click)="toggleNotifications()" class="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors hover:scale-105 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+              </svg>
+            </button>
+            <span *ngIf="notificationService.unreadCount() > 0" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white">
+              {{notificationService.unreadCount()}}
+            </span>
+          </div>
+
+          <!-- User Profile Dropdown -->
+          <div class="relative">
+            <button (click)="toggleUserDropdown()" class="flex items-center gap-2 p-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 transition-colors">
+              <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center font-bold text-white uppercase">
+                {{authService.currentUser()?.fullName?.charAt(0)}}
+              </div>
+              <span class="text-sm font-medium text-slate-700 pr-1 hidden sm:inline">{{authService.currentUser()?.fullName}}</span>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div *ngIf="showUserDropdown" class="absolute right-0 mt-2 w-48 rounded-xl bg-white border border-slate-200 shadow-xl py-1 z-50">
+              <div class="px-4 py-2 border-b border-slate-100">
+                <p class="text-xs text-slate-400">Signed in as</p>
+                <p class="text-sm font-semibold text-slate-800 truncate">{{authService.currentUser()?.email}}</p>
+              </div>
+              <a [routerLink]="getDashboardRoute()" (click)="showUserDropdown = false" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900">Dashboard</a>
+              <button (click)="logout()" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50/50 hover:text-red-700">Sign Out</button>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #guestButtons>
+          <a routerLink="/auth/login" class="text-slate-600 hover:text-slate-900 transition-colors text-sm font-medium">Sign In</a>
+          <a routerLink="/auth/register" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium transition-all text-sm hover:scale-[1.02] shadow-md shadow-brand-500/10">Sign Up</a>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Notification panel dropdown -->
+    <div *ngIf="showNotifications" class="absolute right-6 top-16 w-80 max-w-sm rounded-2xl bg-white border border-slate-200 shadow-2xl p-4 z-50">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
+        <h4 class="text-sm font-bold text-slate-800">Notifications</h4>
+        <button (click)="markAllNotificationsRead()" class="text-xs text-brand-600 hover:underline">Mark all read</button>
+      </div>
+      <div class="max-h-64 overflow-y-auto space-y-3">
+        <p *ngIf="notifications.length === 0" class="text-xs text-slate-400 text-center py-4">No notifications yet</p>
+        <div *ngFor="let notif of notifications" [ngClass]="{'bg-brand-50/50': !notif.isRead}" class="p-2.5 rounded-lg border border-slate-100 hover:border-slate-200 transition-colors relative cursor-pointer" (click)="readNotification(notif)">
+          <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-brand-600" *ngIf="!notif.isRead"></span>
+          <p class="text-xs text-slate-700 pr-3 leading-relaxed">{{notif.message}}</p>
+          <span class="text-[10px] text-slate-400 mt-1 block">{{notif.createdAt | date:'short'}}</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Router Outlet -->
+  <main class="flex-grow">
+    <router-outlet></router-outlet>
+  </main>
+</div>
