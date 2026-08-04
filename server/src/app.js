@@ -33,30 +33,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Rate Limiting
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // Limit each IP to 200 requests per window
-  message: {
-    success: false,
-    message: 'Too many requests from this IP, please try again after 15 minutes.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use(globalLimiter);
+// Rate Limiting (Bypassed in serverless environments to prevent edge proxy block issues)
+const isServerless = !!process.env.VERCEL;
 
-// Specific Auth Rate Limiter
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10, // Max 10 attempts per 15 mins
-  message: {
-    success: false,
-    message: 'Too many authentication attempts, please try again after 15 minutes.',
-  },
-});
-app.use('/api/v1/auth/login', authLimiter);
-app.use('/api/v1/auth/register', authLimiter);
+if (!isServerless) {
+  const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use(globalLimiter);
+
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: { success: false, message: 'Too many authentication attempts, please try again after 15 minutes.' },
+  });
+  app.use('/api/v1/auth/login', authLimiter);
+  app.use('/api/v1/auth/register', authLimiter);
+}
 
 // Static files (local uploads)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
